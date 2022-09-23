@@ -35,18 +35,24 @@ public class RobotUtils {
         return Math.round(distance < 2 ? 0 : (distance-7 < 0 ? 0 : distance-7));
     }
     public RoboColor getColor(NormalizedRGBA rgb){
-        double red = rgb.red*1000;
-        double green = rgb.green*1000;
-        double blue = rgb.blue*1000;
-
-        if (red > green && red > blue)
+        double red = rgb.red*255;
+        double green = rgb.green*255;
+        double blue = rgb.blue*255;
+        double alpha = rgb.alpha*255;
+        if (alpha < 40)
+            return RoboColor.BLACK;
+        else if (alpha > 254)
+            return RoboColor.WHITE;
+        else if (red > green && red > blue)
             return RoboColor.RED;
+        /*else if (blue > red && blue > green)
+            return RoboColor.BLUE;*/
         else if (blue > red && blue > green)
-            return RoboColor.BLUE;
+            return RoboColor.BLACK;
         else if (red > blue && green > blue)
             return RoboColor.YELLOW;
-        else if (red < 100 && green < 100 && blue < 100)
-            return RoboColor.BLACK;
+        else if (green > red && green > blue)
+            return RoboColor.GREEN;
         else
             return RoboColor.WHITE;
     }

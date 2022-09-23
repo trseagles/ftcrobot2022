@@ -1,6 +1,8 @@
 package org.firstinspires.ftc.teamcode.modes.testing;
 
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+import com.qualcomm.robotcore.hardware.NormalizedRGBA;
+import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.teamcode.entites.LogType;
 import org.firstinspires.ftc.teamcode.entites.OpModeBase;
 import org.firstinspires.ftc.teamcode.entites.RoboColor;
@@ -11,32 +13,9 @@ public class ColorTest extends OpModeBase {
     @Override
     public void repeat() {
         RoboColor color = readTopColor();
-        switch (color) {
-            case RED:
-                util.log(LogType.INFO, "Color: RED");
-                break;
-            case GREEN:
-                util.log(LogType.INFO, "Color: GREEN");
-                break;
-            case BLUE:
-                util.log(LogType.INFO, "Color: BLUE");
-                break;
-            case CYAN:
-                util.log(LogType.INFO, "Color: CYAN");
-                break;
-            case MAGENTA:
-                util.log(LogType.INFO, "Color: MAGENTA");
-                break;
-            case YELLOW:
-                util.log(LogType.INFO, "Color: YELLOW");
-                break;
-            case BLACK:
-                util.log(LogType.INFO, "Color: BLACK");
-                break;
-            case WHITE:
-                util.log(LogType.INFO, "Color: WHITE");
-                break;
-        }
+        NormalizedRGBA f = service.topColor.getNormalizedColors();
+
+        util.log(LogType.INFO, "Color: " + color, "Red: " + f.red * 255, "Green: " + f.green * 255, "Blue: " + f.blue * 255, "Alpha: " + f.alpha * 255, "Distance: " + service.topColor.getDistance(DistanceUnit.CM));
         sleep(100);
     }
 }

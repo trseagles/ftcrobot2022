@@ -173,7 +173,7 @@ public class FtcRobotControllerActivity extends Activity
   protected FtcRobotControllerService controllerService;
   protected NetworkType networkType;
 
-  protected FtcEventLoop eventLoop;
+  public static FtcEventLoop eventLoop;
   protected Queue<UsbDevice> receivedUsbAttachmentNotifications;
 
   protected WifiMuteStateMachine wifiMuteStateMachine;

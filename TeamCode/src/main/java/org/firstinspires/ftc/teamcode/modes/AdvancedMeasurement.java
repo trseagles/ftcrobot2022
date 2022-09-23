@@ -4,6 +4,7 @@ import android.annotation.SuppressLint;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import org.firstinspires.ftc.robotcore.external.navigation.Acceleration;
 import org.firstinspires.ftc.robotcore.external.navigation.Orientation;
+import org.firstinspires.ftc.robotcore.external.navigation.Position;
 import org.firstinspires.ftc.teamcode.entites.LogType;
 import org.firstinspires.ftc.teamcode.entites.OpModeBase;
 
@@ -12,6 +13,8 @@ public class AdvancedMeasurement extends OpModeBase {
     @SuppressLint("DefaultLocale")
     @Override
     protected void repeat() throws InterruptedException {
+
+
         Acceleration accel = service.imu.getAcceleration();
 
         util.log(LogType.INFO,
@@ -22,7 +25,13 @@ public class AdvancedMeasurement extends OpModeBase {
                 "Uzaklık 2: " + service.getOriginalDistance(2),
                 "Orijinal Uzaklık 2: " + service.getOriginalDistance(2),
                 "Ayırma Renk: " + readTopColor(),
-                "Alt Renk: ", readBottomColor(),
+                "Alt Renk: " + readBottomColor(),
                 "Sağlıcakla Kalın Canlar :))");
+
+    }
+
+    @Override
+    protected void preRun() {
+        service.imu.startAccelerationIntegration(null, null, 10);
     }
 }

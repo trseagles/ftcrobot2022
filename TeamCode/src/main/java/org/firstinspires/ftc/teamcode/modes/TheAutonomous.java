@@ -1,21 +1,44 @@
 package org.firstinspires.ftc.teamcode.modes;
 
+import android.util.Log;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import org.firstinspires.ftc.robotcore.external.navigation.Acceleration;
-import org.firstinspires.ftc.teamcode.entites.LogType;
-import org.firstinspires.ftc.teamcode.entites.OpModeBase;
+import org.firstinspires.ftc.teamcode.entites.*;
 import org.firstinspires.ftc.teamcode.utils.Collector;
 import org.firstinspires.ftc.teamcode.utils.Distancer;
 
+import java.io.*;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 
 @Autonomous(name = "The Autonomous", group = "Autonomous")
 public class TheAutonomous extends OpModeBase {
 
     private final Distancer distancer;
-    private static final int gold = 1; // How many centimeter in one second
     private final Collector collector;
     private final HashMap<Integer, Double> limits;
+    private final Path[] paths = new Path[] {
+            Path.setPower(0.95),
+            Path.fromDirection(1350,DriveMode.FORWARD),
+            Path.setPower(1),
+            Path.fromAngle(-84, false),
+            Path.setPower(0.5),
+            Path.fromForward(2875),
+            Path.setPower(1),
+            Path.fromAngle(90,false),
+            Path.fromForward(900),
+            Path.fromAngle(90,false),
+            Path.fromForward(1300),
+            Path.fromAngle(89,false),
+            Path.fromDirection(850,DriveMode.BACK),
+            Path.fromDirection(1000,DriveMode.STOP),
+            Path.makePane(true),
+            Path.fromDirection(2500,DriveMode.STOP),
+            Path.fromForward(3300)
+
+
+    };
 
     public TheAutonomous(){
         limits = new HashMap<>();
@@ -34,44 +57,95 @@ public class TheAutonomous extends OpModeBase {
     @Override
     protected void preRun() {
         super.preRun();
-        distancer.start();
+        service.setPower(1);
+        //distancer.start();
         collector.start();
     }
 
     boolean done = false;
 
     @Override
-    protected void repeat() throws InterruptedException {
-        double since = getRuntime();
-        Acceleration accel = service.imu.getAcceleration();
+    protected void stopInit() {
+        distancer.stop();
+        collector.stop();
+    }
 
+    @Override
+    protected void repeat() throws InterruptedException {
         if (done)
             return;
 
-        /*
-            * 2 metre ileri
-            * sola doğru 90 derece
-            * 1 metre ileri
-            * sağa doğru 90 derece
-            * 1 metre geri
-         */
+        for (Path i : paths){
+            i.execute(service);
+        }
 
-        service.forward();
-        sleepForMove(200);
-        service.turn(90);
-        service.forward();
-        sleepForMove(100);
-        service.turn(0);
-        service.backward();
-        sleepForMove(100);
+
+        /*double target = 0;
+        double firstYaw = 0;
+
+        //service.turnToAngle(0);
+
+        moveForSeconds(true, 188); // ileri
+
+        service.turnToAngle(target = service.addYaw(firstYaw, 85)); // sol
+
+        service.setPower(0.3);
+        moveForSeconds(true, 550); // ileri
+        service.setPower(1);
+
+        service.turnToAngle(target = service.addYaw(target, -73)); // sağ
+
+        moveForSeconds(true, 140); // ileri
+
+        service.turnToAngle(target = service.addYaw(target, -90)); // sağ
+
+        moveForSeconds(true, 172); // ileri
+
+        service.turnToAngle(target = service.addYaw(target, -95)); // sağ
+
+        moveForSeconds(false, 53); // geri
+
+        service.stop(); // dur
+        sleep(1000);
+        service.pane(true); // kapak aç
+        sleep(4000); // 3 saniye bekle
+        service.pane(false); // kapak kapat
+
+        moveForSeconds(true, 420); // ileri
+        */
+        /*moveForSeconds(true, 189); // ileri
+x e basınca ıntake geri çalışsın 1 gücünde
+        service.turnToAngle(target = service.addYaw(firstYaw, 85)); // sol
+
+        service.setPower(0.3);
+        moveForSeconds(true, 550); // ileri
+        service.setPower(1);
+
+        service.turnToAngle(target = service.addYaw(target, -71)); // sağ
+
+        moveForSeconds(true, 140); // ileri
+
+        service.turnToAngle(target = service.addYaw(target, -94)); // sağ
+
+        moveForSeconds(true, 175); // ileri
+
+        service.turnToAngle(target = service.addYaw(target, -95)); // sağ
+
+        moveForSeconds(false, 49); // geri
+
+        service.stop(); // dur
+        sleep(1000);
+        service.pane(true); // kapak aç
+        sleep(3000); // 3 saniye bekle
+        service.pane(false); // kapak kapat
+
+        util.log(LogType.INFO, service.getYaw());
+        service.forwardStraight(450); // ileri*/
+
+        service.stop();
+        stop();
+
         done = true;
-        /*distancer.stop();
-        collector.stop();
-        stop();*/
-    }
-
-    private void sleepForMove(int centimeter){
-        sleep(centimeter / gold * 1000);
     }
 
     private void onLimitExceeded(int index){

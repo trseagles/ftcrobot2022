@@ -6,7 +6,7 @@ import org.firstinspires.ftc.teamcode.utils.RobotUtils;
 
 public abstract class OpModeBase extends LinearOpMode {
     public RobotService service;
-    protected RobotUtils util;
+    public RobotUtils util;
     protected boolean stop = false;
 
     @Override
@@ -22,6 +22,7 @@ public abstract class OpModeBase extends LinearOpMode {
                 break;
             repeat();
         }
+        stopInit();
         stop();
     }
 
@@ -34,6 +35,9 @@ public abstract class OpModeBase extends LinearOpMode {
     }
 
     protected abstract void repeat() throws InterruptedException;
+    protected void stopInit(){
+
+    }
 
     public double getFinalDistance(int index){
         return util.getDistance(service.getOriginalDistance(index));
@@ -49,6 +53,15 @@ public abstract class OpModeBase extends LinearOpMode {
         else
             service.forward();
     }
+
+    protected void moveForSeconds(boolean direction, int centimeter){
+        if (direction)
+            service.forward();
+        else
+            service.backward();
+        sleep(service.centiToMillis(centimeter));
+    }
+
     protected DriveMode getMode(DriveMode mode, boolean opposite){
         if (opposite){
             if (mode == DriveMode.BACK)

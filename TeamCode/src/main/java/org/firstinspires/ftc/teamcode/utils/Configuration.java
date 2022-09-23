@@ -4,7 +4,7 @@ public class Configuration {
     public static final double SPEED_INCREMENT = 0.06;
     public static final double SPEED = 50000;
     public static final double DEFAULT_POWER = 0.8;
-    public static final double DEFAULT_INTAKE_POWER = 0.8;
+    public static final double DEFAULT_INTAKE_POWER = 1.0;
     public static final double ROTATION_SPEED_PER = 0.75;
     public static final double MIN_POWER = 0.0;
 }

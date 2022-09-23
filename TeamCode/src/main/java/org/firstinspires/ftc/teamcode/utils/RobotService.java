@@ -1,13 +1,9 @@
 package org.firstinspires.ftc.teamcode.utils;
 
-import com.qualcomm.hardware.adafruit.AdafruitBNO055IMU;
 import com.qualcomm.hardware.bosch.BNO055IMU;
 import com.qualcomm.hardware.rev.Rev2mDistanceSensor;
 import com.qualcomm.hardware.rev.RevColorSensorV3;
-import com.qualcomm.robotcore.hardware.DcMotor;
-import com.qualcomm.robotcore.hardware.DcMotorSimple;
-import com.qualcomm.robotcore.hardware.HardwareMap;
-import com.qualcomm.robotcore.hardware.Servo;
+import com.qualcomm.robotcore.hardware.*;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 
 public class RobotService {
@@ -21,14 +17,14 @@ public class RobotService {
     public Rev2mDistanceSensor distance2;
     public Servo sPane1;
     public Servo sPane2;
-    public Servo pane1;
-    public Servo pane2;
-    public AdafruitBNO055IMU imu;
+    public Servo pane;
+    public BNO055IMU imu;
 
     private double power = Configuration.DEFAULT_POWER;
     private double intakePower = Configuration.DEFAULT_INTAKE_POWER;
 
     public RobotService(HardwareMap hwMap){
+
         left = hwMap.get(DcMotor.class, "left_drive");
         right = hwMap.get(DcMotor.class, "right_drive");
         backHex = hwMap.get(DcMotor.class, "back_hex");
@@ -39,17 +35,21 @@ public class RobotService {
         distance2 = hwMap.get(Rev2mDistanceSensor.class, "distance_2");
         sPane1 = hwMap.get(Servo.class, "servo_1");
         sPane2 = hwMap.get(Servo.class, "servo_2");
-        pane1 = hwMap.get(Servo.class, "servo_3");
-        pane2 = hwMap.get(Servo.class, "servo_4");
-        imu = hwMap.get(AdafruitBNO055IMU.class, "imu");
+        pane = hwMap.get(Servo.class, "servo_3");
+        imu = hwMap.get(BNO055IMU.class, "imu");
 
-        BNO055IMU.Parameters params = new BNO055IMU.Parameters();
-        params.mode = BNO055IMU.SensorMode.IMU;
-        params.accelPowerMode = BNO055IMU.AccelPowerMode.NORMAL;
-        params.gyroPowerMode = BNO055IMU.GyroPowerMode.NORMAL;
-        params.accelUnit = BNO055IMU.AccelUnit.METERS_PERSEC_PERSEC;
-        params.angleUnit = BNO055IMU.AngleUnit.DEGREES;
-        imu.initialize(params);
+        try{
+            BNO055IMU.Parameters params = new BNO055IMU.Parameters();
+            params.mode = BNO055IMU.SensorMode.IMU;
+            /*params.accelPowerMode = BNO055IMU.AccelPowerMode.NORMAL;
+            params.gyroPowerMode = BNO055IMU.GyroPowerMode.NORMAL;*/
+            params.accelUnit = BNO055IMU.AccelUnit.METERS_PERSEC_PERSEC;
+            params.angleUnit = BNO055IMU.AngleUnit.DEGREES;
+            imu.initialize(params);
+        }
+        catch (Exception e){
+            int a = 0;
+        }
 
         backHex.setDirection(DcMotorSimple.Direction.FORWARD);
         frontHex.setDirection(DcMotorSimple.Direction.FORWARD);
@@ -78,10 +78,10 @@ public class RobotService {
         setMotorPower(-power, -power);
     }
     public void right() {
-        setMotorPower(0, power * Configuration.ROTATION_SPEED_PER);
+        setMotorPower(0, power);
     }
     public void left() {
-        setMotorPower(power * Configuration.ROTATION_SPEED_PER, 0);
+        setMotorPower(power, 0);
     }
     public void stop(){
         setMotorPower(0, 0);
@@ -102,46 +102,32 @@ public class RobotService {
         backHex.setPower(b);
         frontHex.setPower(f);
     }
-    public void pane(boolean direction, boolean open){
-        if (direction){
-            if (open)
-                pane1.setPosition(90);
-            else
-                pane1.setPosition(0);
-        }
-        else{
-            if (open)
-                pane2.setPosition(90);
-            else
-                pane2.setPosition(0);
-        }
+    public void pane(boolean open){
+        if (open)
+            pane.setPosition(0.57);
+        else
+            pane.setPosition(0.35);
     }
-    public void separate(boolean direction) {
-        try {
-            if (direction){
-                sPane1.setPosition(0);
-                Thread.sleep(300);
-                sPane1.setPosition(50);
-            }
-            else{
-                sPane2.setPosition(50);
-                Thread.sleep(300);
-                sPane2.setPosition(0);
-            }
-        }
-        catch (InterruptedException ignored){
-
-        }
+    public void separate(boolean direction, boolean open) {
+        if (direction)
+            sPane1.setPosition(open ? 0.18 : 0);
+        else
+            sPane2.setPosition(open ? 0 : 0.16);
     }
 
     public void convertGamepad(double y, double x){
-        if (x == 0){
-            setMotorPower(y, y);
-            return;
+        if (x < 0){
+            x *= y < 0 ? 1 : -1;
+            setMotorPower(x, x/2);
         }
-        x += 0.5;
-        double rp = y * x / 10;
-        setMotorPower(rp, y - rp);
+        else if (x > 0){
+            x *= y < 0 ? -1 : 1;
+            setMotorPower(x / 2, x);
+        }
+
+        else
+            setMotorPower(y, y);
+
     }
 
     public double getOriginalDistance(int index){
@@ -161,18 +147,57 @@ public class RobotService {
     public double getPitch(){
         return imu.getAngularOrientation().secondAngle;
     }
+    public long centiToMillis(int centimeter){
+        return 1000L * centimeter / 150;
+    }
 
-    public void turn(int angle){
+    public void turnToAngle(double angle){
         double pow = power;
-        power = 0.5;
-        if (-getYaw() > angle)
-            while (-getYaw() > angle)
+        power /= 3;
+
+        if (angle < -179 || angle > 179)
+            angle = -177;
+
+        if (getYaw() > angle)
+            while (getYaw() > angle)
                 turn(false);
-        if (-getYaw() < angle)
-            while (-getYaw() < angle)
+        else
+            while (getYaw() < angle)
                 turn(true);
+
         stop();
+
+
         power = pow;
     }
+
+    public double addYaw(double yaw, int angle){
+        double nx = angle + yaw;
+        return nx > 180 ? -180 + (nx - 180) : (nx < -180 ? 180 + (nx + 180) : nx);
+    }
+
+    public void turn(int angle){
+        turnToAngle(addYaw(getYaw(), angle));
+    }
+
+    public void forwardStraight(long to){
+
+        long sysTime = System.currentTimeMillis();
+        double yaw = getYaw();
+        double power = getPower();
+        while (System.currentTimeMillis() - sysTime < to){
+            double y = getYaw();
+            if (yaw < -179 || yaw > 179)
+                yaw = -177;
+
+            double golden = power < 0 ? 0.07 : -0.07;
+
+            if (y > yaw)
+                setMotorPower(power + golden, power);
+            else
+                setMotorPower(power, power + golden);
+        }
+    }
+
 }
 
